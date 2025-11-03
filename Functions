@@ -1,0 +1,47 @@
+import requests
+import csv
+from datetime import date
+
+BASE_URL = "http://localhost:5000/api/transactions"
+
+def add_transaction(data):
+    r = requests.post(BASE_URL, json=data)
+    print("Add:", r.status_code, r.json())
+
+def add_transactions_from_csv(csv_path):
+    with open(csv_path, mode="r", encoding="utf-8") as file:
+        reader = csv.DictReader(file)
+        count = 0
+        for row in reader:
+            add_transaction(row)
+            count += 1
+    print(f"{count} transactions loaded from {csv_path}")
+
+def delete_transaction(transaction_id):
+    r = requests.delete(f"{BASE_URL}/{transaction_id}")
+    print("Delete:", r.status_code, r.json())
+
+def delete_all_transactions():
+    while True:
+        r = requests.get(f"{BASE_URL}/list")
+        transactions = r.json().get("transactions", [])
+        if not transactions:
+            break
+        [requests.delete(f"{BASE_URL}/{t['id']}") for t in transactions]
+    print("All transactions deleted ✅")
+
+if __name__ == "__main__":
+    new_transaction = {
+        "amount": 250,
+        "description": "Cineplanet",
+        "category": "entertainment",
+        "date": "2025-11-03",
+        "type": "expense"
+    }
+    #add_transaction(new_transaction)
+
+    #add_transactions_from_csv("expenses_example.csv")
+
+    #delete_transaction(51)
+
+    delete_all_transactions()
